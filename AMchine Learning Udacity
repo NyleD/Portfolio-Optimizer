@@ -1,0 +1,302 @@
+Machine Learning for Udacity
+
+Working with DataFrames and Manipulation Data within DataFrames
+
+To read multiple stocks into a single dataframe, you need to:
+Specify a set of dates using 
+.date_range
+Create an empty dataframe with dates as index
+This helps align stock data and orders it by trading date
+Read in a reference stock (here SPY) and drop non-trading days using pandas.DataFrame.dropna
+Incrementally join dataframes using pandas.DataFrame.join
+Once you have multiple stocks, you can:
+Select a subset of stocks by ticker symbols
+Slice by row (dates) and column (symbols)
+Plot multiple stocks at once (still using pandas.DataFrame.plot)
+Carry out arithmetic operations across stocks, e.g. normalize by the first day's price
+
+_______________________________________________________________________________________
+
+Numpy: Is a Wrapper for Numerical Libraries
+
+- Pandas is a wrapper for Numpy
+- You can treat a dataframe just like a Numpy ndarray. 
+
+  
+
+numpy.ndarray.shape: Dimensions (height, width, ...)
+numpy.ndarray.ndim: No. of dimensions = len(shape)
+numpy.ndarray.size: Total number of elements
+numpy.ndarray.dtype: Datatype
+
+
+Summing Columns and Rows:
+
+Axis = 0 Operation over columns and iterate over rows 
+Axis = 1 Operation over rows and iterate over columns
+
+Time Libraries will track the time of the operation
+
+Mutiplication using arrays does element by elemnet multiplication
+To do Matrix multiplication you must use the dot function
+
+Need to Foucus Alot more on numpy libraries since there is alot of computatinal 
+
+
+____________________________________________________________________________________
+Stastical Computation: 
+
+performing mean on matrix performs mean for every coloumn (df.mean()) 
+
+Rolling Mean takes the X-day mean so it's less volatile (Moving Average/Rolling Average ) 
+
+Bollinger Bands:
+
+when the price deviates by 2(sigma) then that's a buy/sell signal 
+
+Daily Returns: 
+
+price(today) / price(today - 1) - 1
+
+- Good to compare stocks with thier daily returns
+
+When to use .values??
+
+- When given two dataframes pandas tries to match each element index
+- Use .values when you have taken some subset array of the data frame for an operation with another data frame so pandas does not match dataframes
+
+Cumulative Returns: 
+
+	cum_return[t] = (price[t] / price[0]) - 1 
+
+____________________________________________________________________________________
+
+Incomplete Data:
+
+Data Could Have Gaps (Stock Splits and Stock Merger)
+
+When there are Gaps in the data: 
+
+IN BETWEEN: we usually fill foward as the last known price
+AT THE START OF THE DATA: fill backwards as the last known price
+
+1) Fill Forward (Gaps in Between)
+2) Fill Backward (Gaps before stock prices) 
+____________________________________________________________________________________
+
+Histograms and Scatterplots: 
+
+Should Compare Daily Returns for multiple stocks
+
+- Can Plot a Histogram for daily returns of the stocks ->> basically counting how many times the daily return percentage occured in the bins of the histogram 
+(The shape of the histogram is very useful!!!!) 
+
+- The Shape of the histogram looks like a normal distribution(Kurtosis however comes into play) 
+
+Important Technical Analysis on the Histogram
+
+- Mean 
+- Std Dev
+- Kurtosis ->>> IS POSITIVE: that means the tails are fatter than they should be in a normal    		distribution
+
+            ->>> IS NEGATIVE: Skinny Tails, than normal distribution
+
+- Important: Finance Professional Compare Histograms of 2 stocks Daily Returns 
+
+The higher the mean the greater the returns
+The larger the spread(greater std dev) the higher the volatility. 
+
+Scatterplots:
+
+You can take the daily returns of 2 stocks and can plot them on a scatterplot. On one axis you can have one stock, and on the other you can have another stock. Then you will see a relationship (Look at STAT 231 Notes ->> Tells you what the graphic repersentation of the plot means) 
+
+- Can set a line of best fit on the scatter plot using linear regression, the slope of the line of best fit is called beta. 
+
+Beta Meaning, how reactive the stock is to the market. 
+	Example: If Beta is 2, if the market goes up 1%, then the stock goes up 2%. 
+
+Alpha Meaning: it is the y-intercept of the scatter plot
+    If POSTIVE -> Better Returns than the market 
+    If NEGATIVE -> Worse Returns than the market
+
+Beta != Correlation
+
+Correlation: How well the points fit the line 
+
+If correlation is low, Beta is useless, the higher the correlation the higher the probability that the stock will act according to beta in the market
+
+Using Python to fit a line: 
+
+We use the polyfit() function part of numpy,
+	- which takes all the x coordinates and y coordinates in two different lists
+	- Takes the degree of the line of best fit
+	- returns the Beta and Alpha (The Sloper and the y-intercept)
+
+Example: beta_XOM, alpha_XOM = np.polyfit(daily_returns['SPY'], daily_returns['XOM'],1) 
+
+Then to plot the line, we must send in all the x and y values of the line. To get the y value we just use the beta and alpha. 
+
+Example: plt.plot(daily_returns['SPY'], beta_XOM"*daily_returns['SPY'] + alpha_XOM, '-', colour='r') 
+
+To Find the Correlation Using Python: 
+
+daily_returns.corr(method='pearson') use the pearson method to find correlation
+
+- Just Remember that the returns are not acutually normally distributed, since we have to keep in mind of kurtosis. 
+
+____________________________________________________________________________________
+Statistics On Portfolios
+
+
+Calculating Portfolio Value From Prices: 
+
+1) Normalize all prices of the stock 
+2) Mutiple Each Column by the percentage of $$$ you have allocated to that stock 
+   (From 0 to 1)
+3) Then Mutiply the whole 2D array with you total investment
+
+- If you sum up a row, that the amount your portfolio is worth on that date (dates increase as you go down rows) 
+
+Portfolio Statistics That ALl investors Want To Know From Daily Returns: 
+
+1) Cumulative Returns: How much value of the portfolio has gone up from the begining to the end
+
+(port_val[-1] / port_val[0]) - 1  (remember -1 means the last row) 
+
+2) Average Daily Returns: Just the Mean of the daily returns 
+
+daily_ret.mean() 
+
+3) Risk/Std Deviation Daily Returns: Just the Deviation of the daily returns 
+
+daily_ret.std() 
+
+4) Sharpe Ratio: 
+	- Returns that has been risk adjusted
+	- Risk Free Rate of Return (Counting in Treasury return) 
+
+Portfolio's that are Better have low volatility(risk,std dev) and high returns
+
+Sharpe Ratio Equation:
+
+(Portfolio Return - Risk Free Return(Short Term Treasury Bill)) / std dev of portfolio return 
+
+Rp -> Portfolio Return
+Rf -> Risk Free Return
+
+Sharpe Ratio for the Future: 
+
+S = ( E[Rp - Rf] / std[Rp - Rf] ) 
+
+- The Expected is just the mean 
+
+S = mean(daily_rets - daily_rf) / std(daily_rets - daily_rf)
+
+Options to Use for the Risk Free Rate
+ - LIBOR 
+ - 3 Month T-Bill
+ - Last Few Years (0%) 
+
+How to Get the Daily Risk Free Rate if given annual return ->>> EX Below: 
+
+       Say the the risk free rate is 0.1 annuSally: 
+
+        daily_rf = 252th root(1 + 0.1) - 1 
+
+	We add 1 to it to get the total anual return.
+        Since there are 252 banking days in the year we take the 252th root of 1.1
+        And then subract 1 to get the daily risk free return
+
+Final Equation for S = mean(daily_rets - daily_rf) / std(daily_rets) <<<-- daily_df is remove in the std deviation calculation since its a constant
+
+Frequency of Sampling Daily Returns: 
+
+Orginal Vision is that Sharpe Ratio is an annual measure (Compute using Yearly Samples)
+
+SRannualized = k * SR
+
+k = sqrt(#samples per year) | daily k = sqrt(252) | weekly k = sqrt(52) | monthly k = sqrt(12) | yearly k = sqrt(1)  
+
+The # of samples has to with the number of prices you pull (the time period of prices you pull) 
+
+________________________________________________________________________________________________
+
+Optimizer: 
+
+- Find Minimum Values of Functions
+- Build Parametrized models based on data
+- Refine allocations to stocks in portfolios
+
+The minimizer uses gradient decent, normal equation algorithms.  
+
+1) import scipy.optimize as spo 
+
+2) define some function f(x)
+
+3) call minimize fucntion spo.minimize(function, Xguess_value, method_of_minimization, options)
+
+Minimize Functions always work on convex curves
+Might not always work on non convex functions 
+
+Building a Parameterized Model: 
+_________________________________________________________________________________________________
+
+Fit a Line to given data points: 
+
+1) We have a intial guess for the line
+2) We have some data with noise
+3) We have an error_function which returns the difference between the line and data
+
+SUM(data_y - (line[0] * data_x + line[1]))^2   <<----- Minimize this
+
+The error function is the function we are trying to minimize
+
+we call
+
+spo.minimize(error_func, guess_line, args=(data,), method='SLSQP', options={'display'=true}) 
+
+where spo is the scipy.optimize library
+
+________________________________________________________________________________________________
+
+Portfolio Optimization: (How to build a portfolio Optimizer) 
+
+
+- Given a set of assets and time period, find a way to allocate funds to the assets to maxmize performance
+
+
+How do we measure performance?
+
+- cumulative returns 
+	: The optimization for this would just invest all your money on the stock that produces the 		  higest returns BUT NOT THE BEST FOR RISK MITIGATION
+- volatility or risk (std deviation)
+- Sharpe Ratio (Risk Adjusted Return)  
+
+- Optimizing portfolio's also helps for the future in investments
+
+SHOULD OPTIMIZE FOR SHARPE RATIO ->> INCLUDES BOTH RETURNS AND RISK
+
+How to create a portfolio optimizer?????
+
+provide a function to minimize f(x) = Sharpe Ratio * -1 
+	x is the allocations so it has multiple dimensions
+	the reason we multiply Sharpe Ratio by -1 is because the minimizer tries to minimize f(x)
+
+
+TIPS: 
+
+Ranges and Constraints: 
+
+Ranges: Limits on values for X (Between 0 and 1) 
+Will help run the optmizer faster. 
+
+Contraints: Properties of X that must be true
+- Sum of the allocation to add up to 1 (Sum of all dimensions of x) 
+ 
+
+
+
+
+
+
+
